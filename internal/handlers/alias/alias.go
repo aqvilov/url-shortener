@@ -93,15 +93,12 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		StatusOK(w, r, alias)
+		json.NewEncoder(w).Encode(Response{
+			OriginalUrl: req.URL, // чтобы возвращалась пользователю ориг строка
+			Alias:       alias,
+			RespStatus: status{
+				Status: "OK",
+			},
+		})
 	}
-}
-
-func StatusOK(w http.ResponseWriter, r *http.Request, alias string) {
-	json.NewEncoder(w).Encode(Response{
-		Alias: alias,
-		RespStatus: status{
-			Status: "OK",
-		},
-	})
 }

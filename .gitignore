@@ -1,0 +1,13 @@
+.env
+.idea/
+local/
+*.exe
+*.exe~
+
+*.dll
+
+*.test
+
+.vscode/
+
+example.env

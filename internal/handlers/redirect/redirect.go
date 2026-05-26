@@ -1,9 +1,9 @@
 package redirect
 
 import (
-	"encoding/json"
 	"log/slog"
 	"net/http"
+	"url-shortener/internal/handlers/api"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -26,7 +26,7 @@ func New(log *slog.Logger, getter URLGetter) http.HandlerFunc {
 		if alias == "" {
 			log.Error("Missing alias")
 
-			JSONHandler(w, "Error", "Missing alias", http.StatusBadRequest)
+			api.JSONHandler(w, "Error", "Missing alias", http.StatusBadRequest)
 			return
 		}
 
@@ -35,27 +35,12 @@ func New(log *slog.Logger, getter URLGetter) http.HandlerFunc {
 		if err != nil {
 			log.Error("Error getting originalURL")
 
-			JSONHandler(w, "Error", "Short URL not found", http.StatusNotFound)
+			api.JSONHandler(w, "Error", "Short URL not found", http.StatusNotFound)
 
 			return
 		}
 
 		log.Info("successful redirect", "alias", alias, "to original-url", originalURL)
 		http.Redirect(w, r, originalURL, http.StatusFound)
-	}
-}
-
-// на гениалычах вынес
-func JSONHandler(w http.ResponseWriter, error string, status string, statusCode int) {
-	w.Header().Set("Content-Type", "application/json")
-
-	w.WriteHeader(statusCode)
-
-	err := json.NewEncoder(w).Encode(Response{
-		Error:  error,
-		Status: status,
-	})
-	if err != nil {
-		return
 	}
 }

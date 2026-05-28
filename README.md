@@ -27,7 +27,7 @@ REST API сервис для сокращения ссылок. Поддержи
 
 ```
 cmd/
-├── server/main.go     — точка входа сервера (роутинг, middleware, graceful shutdown)
+├── main/main.go     — точка входа сервера (роутинг, middleware, graceful shutdown)
 └── cli/main.go        — точка входа CLI-клиента
 
 internal/
@@ -107,13 +107,14 @@ http_server:
   addr: "0.0.0.0:8082"
 ```
 
-**3.** Собрать и запустить:
+### 3.2 Запуск через docker
+**1.** Собрать и запустить:
 
 ```bash
 docker compose up --build
 ```
 
-**4.** Остановить:
+**2.** Остановить:
 
 ```bash
 docker compose down

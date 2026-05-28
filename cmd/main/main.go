@@ -1,8 +1,12 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 	"url-shortener/internal/config"
 	"url-shortener/internal/handlers/alias"
 	"url-shortener/internal/handlers/deleter"
@@ -52,12 +56,32 @@ func main() {
 		WriteTimeout: cfg.HTTPServer.Timeout,
 	}
 
-	log.Info("Start server", "addr", cfg.HTTPServer.Addr)
+	go func() {
+		log.Info("Start server", "addr", cfg.HTTPServer.Addr)
 
-	if err := server.ListenAndServe(); err != nil { // тут мы блокируемся и не идем дальше
-		log.Error("failed to start server", "err", err)
+		if err := server.ListenAndServe(); err != nil { // тут мы блокируемся и не идем дальше (вынес в горутину)
+			log.Error("failed to start server", "err", err)
+			os.Exit(1)
+		}
+	}()
+
+	// graceful shutdown
+	quit := make(chan os.Signal, 1)
+	//              os.Interrupt тоже самое что SIGINT (сигнал ctrl + c), SIGTERM - ловит сигнал докера, кубера, системД
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
+
+	log.Info("Shutdown server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// server.Shutdown ждёт завершения активных запросов (контекст с таймаутом ограничивает время ожидания)
+	if err := server.Shutdown(ctx); err != nil {
+		// если за 5 секунд запросы не завершились, то shutdown вызывает ошибку
+		// логируем эту ошибку
+		log.Info("failed to shutdown server", "err", err)
 	}
-
 	//end
 	log.Info("end url-shortener")
 }

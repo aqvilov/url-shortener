@@ -7,10 +7,7 @@ REST API сервис для сокращения ссылок. Поддержи
 ## Содержание
 
 - [Архитектура](#архитектура)
-- [Структура проекта](#структура-проекта)
-- [Требования](#требования)
 - [Установка и запуск](#установка-и-запуск)
-- [Конфигурация](#конфигурация)
 - [API](#api)
 - [CLI](#cli)
 - [Тестирование](#тестирование)
@@ -92,6 +89,67 @@ go build -o server.exe ./cmd/main
 # CLI-клиент
 go build -o cli.exe ./cmd/cli
 ```
+
+### 3.1 Сборка через docker
+
+**1.** Заполнить `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Обязательно задать `MIDDLEWARE_TOKEN` - без него удаление ссылок вернёт `500`.
+
+**2.** В `local/local.yaml` адрес должен быть `0.0.0.0`, а не `localhost`:
+
+```yaml
+http_server:
+  addr: "0.0.0.0:8082"
+```
+
+**3.** Собрать и запустить:
+
+```bash
+docker compose up --build
+```
+
+**4.** Остановить:
+
+```bash
+docker compose down
+```
+
+Данные PostgreSQL сохраняются в volume `postgres_data` и переживают перезапуск. Чтобы удалить данные вместе с контейнерами:
+
+```bash
+docker compose down -v
+```
+
+### Проверка
+
+Создать ссылку:
+
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://localhost:8082/url" `
+  -ContentType "application/json" `
+  -Body '{"url": "https://google.com", "alias": "google"}'
+```
+
+Проверить редирект - открыть в браузере:
+
+```
+http://localhost:8082/google
+```
+
+Удалить ссылку:
+
+```powershell
+Invoke-RestMethod -Method Delete -Uri "http://localhost:8082/url/google" `
+  -Headers @{Authorization = "Bearer твой_токен_из_.env"}
+```
+
+
+---
 
 ### 4. Запуск
 

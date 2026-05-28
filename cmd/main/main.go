@@ -40,7 +40,7 @@ func main() {
 	//подключаем написанные хендлеры к роутеру
 	router.Post("/url", alias.New(log, db))
 	router.Get("/{alias}", redirect.New(log, db))
-	router.Delete("/{alias}", deleter.New(log, db))
+	router.Delete("/url/{alias}", deleter.New(log, db))
 
 	log.Info("Start server")
 

@@ -44,7 +44,12 @@ func main() {
 	//подключаем написанные хендлеры к роутеру
 	router.Post("/url", alias.New(log, db))
 	router.Get("/{alias}", redirect.New(log, db))
-	router.Delete("/url/{alias}", deleter.New(log, db))
+
+	//требуется авторизация для удаления ссылок
+	router.Group(func(r chi.Router) { // как работает router.Group
+		r.Use(CustomMiddleware.Auth) // все маршруты зарегистрированные после этой строки в данной группе проходят через Auth
+		r.Delete("/url/{alias}", deleter.New(log, db))
+	})
 
 	log.Info("Start server")
 

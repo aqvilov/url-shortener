@@ -6,12 +6,14 @@ import (
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/joho/godotenv"
 )
 
-// в конфиге храним переменную окружения (local, prod, test etc.),  путь к бд, хотя по сути он не обязательный тут
+// в конфиге храним переменную окружения (local, prod, test etc.)
 type Config struct {
-	Env         string `yaml:"env"`
-	StoragePath string `yaml:"storage_path"`
+	Env         string     `yaml:"env"`
+	StoragePath string     `yaml:"storage_path"`
+	HTTPServer  HTTPServer `yaml:"http_server"`
 }
 
 type HTTPServer struct {
@@ -22,9 +24,13 @@ type HTTPServer struct {
 
 // загружаем конфиг
 func Load() Config {
+	if err := godotenv.Load(); err != nil {
+		log.Printf("Предупреждение: файл .env не найден: %v", err)
+	}
+
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
-		configPath = "../../local/local.yaml" // конфиг отсюда
+		configPath = "./local/local.yaml"
 		log.Printf("use default config path: %s", configPath)
 	}
 	// проверка сущуствования файла через os.Stat

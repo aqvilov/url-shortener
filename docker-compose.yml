@@ -31,7 +31,7 @@ services:
     environment:
       CONFIG_PATH: /local/local.yaml
       DB_CONN: "host=postgres port=5432 user=${POSTGRES_USER:-postgres} password=${POSTGRES_PASSWORD:-postgres} dbname=${POSTGRES_DB:-urlshortener} sslmode=disable"
-      MIDDLEWARE_TOKEN: ${MIDDLEWARE_TOKEN}
+      MIDDLEWARE_TOKEN: ${MIDDLEWARE_TOKEN:?MIDDLEWARE_TOKEN is not set in .env}
     depends_on:
       postgres:
         condition: service_healthy

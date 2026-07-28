@@ -46,8 +46,14 @@ func main() {
 	router.Get("/{alias}", redirect.New(log, db))
 
 	//требуется авторизация для удаления ссылок
+	token := os.Getenv("MIDDLEWARE_TOKEN")
+	if token == "" {
+		log.Error("MIDDLEWARE_TOKEN is not set")
+		os.Exit(1)
+	}
+
 	router.Group(func(r chi.Router) { // как работает router.Group
-		r.Use(CustomMiddleware.Auth) // все маршруты зарегистрированные после этой строки в данной группе проходят через Auth
+		r.Use(CustomMiddleware.Auth(token)) // все маршруты зарегистрированные после этой строки в данной группе проходят через Auth
 		r.Delete("/url/{alias}", deleter.New(log, db))
 	})
 
